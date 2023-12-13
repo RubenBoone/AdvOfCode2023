@@ -33,5 +33,7 @@ def part1():
 
     print(answer)
 
+    file.close()
+
 if __name__ == "__main__":
     part1()
