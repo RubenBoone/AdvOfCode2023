@@ -17,13 +17,24 @@ def create_list():
 
     return (full_list, length)
 
+def add_to_dict(number_locations, number, full_list, symbol_locations, symbol):
+    string_nr = ""
+    for char in number_locations[number]:
+        string_nr += full_list[char]
+
+    try:
+        if int(string_nr) not in symbol_locations[symbol]:
+            symbol_locations[symbol].append(int(string_nr))
+    except KeyError:
+        pass
+
 def main():
 
     answer = 0
     full_list, line_length = create_list()
 
     number_locations = [[]]
-    symbol_locations = []
+    symbol_locations = {}
 
     for item in range(len(full_list)):
 
@@ -33,52 +44,64 @@ def main():
         except:
             if len(number_locations[len(number_locations) - 1]) != 0:
                 number_locations.append([])
-            if full_list[item] != ".":
-                symbol_locations.append(item)
+            if full_list[item] == "*":
+                symbol_locations[item] = []
 
     # Last is always empty because of above implementation
     number_locations.pop()
 
     for number in range(len(number_locations)):
         found = False
+        last_value = -1
         for value in range(len(number_locations[number])):
+            for symbol in list(symbol_locations.keys()):
+                last_value = symbol
 
-            # Under number
-            if number_locations[number][value] + line_length in symbol_locations:
-                found = True
-                break
+                # Under number
+                if number_locations[number][value] + line_length == symbol:
+                    found = True
 
-            # Above number
-            if number_locations[number][value] - line_length in symbol_locations:
-                found = True
-                break
+                    add_to_dict(number_locations, number, full_list, symbol_locations, symbol)
 
-            # Left of number
-            if number_locations[number][value] - 1 in symbol_locations:
-                found = True
-                break
+                    break
 
-            # Right of number
-            if number_locations[number][value] + 1 in symbol_locations:
-                found = True
-                break
+                # Above number
+                if number_locations[number][value] - line_length == symbol:
+                    found = True
 
-            # Diagonal of number
-            if (number_locations[number][value] + (line_length + 1) in symbol_locations or 
-                number_locations[number][value] - (line_length + 1) in symbol_locations or 
-                number_locations[number][value] + (line_length - 1) in symbol_locations or 
-                number_locations[number][value] - (line_length - 1) in symbol_locations):
-                found = True
-                break
+                    add_to_dict(number_locations, number, full_list, symbol_locations, symbol)
 
-        if found:
-            string_nr = ""
-            for value in number_locations[number]:
-                string_nr += full_list[value]
-            
-            print(answer, "+", string_nr)
-            answer += int(string_nr)
-            found = False
+                    break
+
+                # Left of number
+                if number_locations[number][value] - 1 == symbol:
+                    found = True
+
+                    add_to_dict(number_locations, number, full_list, symbol_locations, symbol)
+
+                    break
+
+                # Right of number
+                if number_locations[number][value] + 1 == symbol:
+                    found = True
+
+                    add_to_dict(number_locations, number, full_list, symbol_locations, symbol)
+
+                    break
+
+                # Diagonal of number
+                if (number_locations[number][value] + (line_length + 1) == symbol or 
+                    number_locations[number][value] - (line_length + 1) == symbol or 
+                    number_locations[number][value] + (line_length - 1) == symbol or 
+                    number_locations[number][value] - (line_length - 1) == symbol):
+
+                    add_to_dict(number_locations, number, full_list, symbol_locations, symbol)
+
+                    break
+
+    for value_list in symbol_locations.values():
+        if len(value_list) == 2:
+            answer += value_list[0] * value_list[1]
 
     print(answer)
 
