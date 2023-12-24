@@ -1,35 +1,56 @@
-def main():
-    with open('puzzle_input.txt') as file:
-        lines = file.read().splitlines()
+import re
+import math
 
-        wanted_seeds = [int(x) for x in lines[0].split(': ')[1].split(' ')]
+f = open("puzzle_input.txt", "r")
+lines = f.read().splitlines()
+f.close()
 
-        print(f"Wanted seeds: {wanted_seeds}")
+seeds = []
+mapRanges = []
+seedRanges = []
 
-        possible_answers = []
-        for seed in wanted_seeds:
-            next_value = seed
-            skip_block = False
-            for i in range(2, len(lines)):
+# Dealing with the inputs
+seeds = list(map(int,re.findall(r'[\d]+', lines[0])))
+for x in range(0,len(seeds),2):
+    seedRanges.append([seeds[x],seeds[x+1]])
 
-                if skip_block:
-                    if lines[i] == '':
-                        skip_block = False
-                    continue
+lines = lines[3:]
+mapTypes = 0
 
-                if len(lines[i].split(' ')) <= 2:
-                    continue
-                else:
-                    work_line = [int(x) for x in lines[i].split(' ')]
-                    if next_value >= work_line[1] and next_value <= work_line[1] + work_line[2]:
-                        next_value += (work_line[0] - work_line [1])
-                        skip_block = True
+tempRange = []
+for x in lines:
+    # New type of map starts
+    if(re.search(r'map',x)):
+        mapRanges.append(tempRange)
+        tempRange = []
+    else:
+        if(len(x) > 0):
+            tempRange.append(list(map(int,re.findall(r'[\d]+', x))))
+mapRanges.append(tempRange)          
+# mapTypes[n] = [destination, origin, range]
 
-            possible_answers.append(next_value)
-    file.close()
+# Doing it in reverse
+mapRanges.reverse()
 
-    print("Possible answers:", possible_answers)
-    print("Answer:", min(possible_answers))
+#Map checking
+x = -1
+found = False
+while(not found):
+    x += 1
+    currentMap = x
+    for i in mapRanges:
+        for j in i:
+            if(j[0] <= currentMap < j[0] + j[2]):
+                currentMap = j[1] + (currentMap - j[0])
+                break
+    # Checking if seed is in any starting range
 
-if __name__ == '__main__':
-    main()
+    for i in seedRanges:
+        #print (f"Checking if {x} which maps to {currentMap} is in {i[0]} to {i[0] + i[1] - 1}")
+        if(i[0] <= currentMap < i[0] + i[1]):
+            found = True
+
+    #print (currentMap)
+
+print(x)
+#print(min(seedLocations))
